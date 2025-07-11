@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>NotCoin Clone</title>
+    
+    <!-- Google Fonts থেকে Inter ফন্ট ইম্পোর্ট করা হয়েছে -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* বেসিক রিসেট এবং স্টাইল */
+        :root {
+            --bg-color: #000000;
+            --primary-text: #ffffff;
+            --secondary-text: #7d7d7d;
+            --coin-gold: #f3c65b;
+            --coin-shadow: #e0ac40;
+            --energy-bar: #56c3f5;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--primary-text);
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+            -webkit-user-select: none;
+            user-select: none;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* উপরের অংশ: প্রোফাইল এবং স্কোর */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header .avatar {
+            width: 40px;
+            height: 40px;
+            background-color: #333;
+            border-radius: 50%;
+        }
+        .header .username {
+            font-weight: 600;
+        }
+
+        /* মাঝখানের অংশ: মোট স্কোর */
+        .score-section {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .score-section .coin-icon {
+            width: 40px;
+            height: 40px;
+        }
+        .score-section #total-score {
+            font-size: 48px;
+            font-weight: 800;
+        }
+
+        /* মূল গেমের অংশ: কয়েন এবং এনার্জি */
+        .game-section {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        #coin-container {
+            position: relative;
+            cursor: pointer;
+        }
+
+        #coin {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, #ffd700, #f3c65b, #e0ac40);
+            border-radius: 50%;
+            transition: transform 0.1s ease;
+            box-shadow: 0 10px 20px rgba(243, 198, 91, 0.4);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        #coin:active {
+            transform: scale(0.98) perspective(500px) rotateY(10deg) rotateX(10deg);
+        }
+
+        .tap-feedback {
+            position: absolute;
+            font-size: 36px;
+            font-weight: 900;
+            color: white;
+            opacity: 1;
+            animation: fade-up-and-out 1s forwards;
+            pointer-events: none;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+        
+        @keyframes fade-up-and-out {
+            from { opacity: 1; transform: translateY(0) scale(1); }
+            to { opacity: 0; transform: translateY(-80px) scale(1.5); }
+        }
+
+        /* এনার্জি সেকশন */
+        .energy-section {
+            width: 100%;
+            max-width: 300px;
+            margin-top: 30px;
+        }
+        .energy-info {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .energy-info span {
+            color: var(--energy-bar);
+        }
+        .energy-bar-container {
+            width: 100%;
+            height: 10px;
+            background-color: #333;
+            border-radius: 5px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        #energy-bar {
+            width: 100%;
+            height: 100%;
+            background-color: var(--energy-bar);
+            border-radius: 5px;
+            transition: width 0.2s ease-in-out;
+        }
+
+        /* নিচের ন্যাভিগেশন বার */
+        .nav-bar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            background-color: #1c1c1d;
+            padding: 10px;
+            border-radius: 15px;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            color: var(--secondary-text);
+            cursor: pointer;
+        }
+        .nav-item.active {
+            color: var(--primary-text);
+        }
+        .nav-item svg {
+            width: 24px;
+            height: 24px;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="avatar"></div>
+        <div class="username" id="username">Player</div>
+    </header>
+
+    <main>
+        <div class="score-section">
+            <img src="https://i.ibb.co/HhgGgC9/notcoin-symbol.png" alt="coin" class="coin-icon">
+            <h1 id="total-score">0</h1>
+        </div>
+
+        <div class="game-section">
+            <div id="coin-container">
+                <div id="coin"></div>
+            </div>
+
+            <div class="energy-section">
+                <div class="energy-info">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" stroke="#56c3f5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    <span id="energy-count">1000/1000</span>
+                </div>
+                <div class="energy-bar-container">
+                    <div id="energy-bar"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="nav-bar">
+        <div class="nav-item active">
+             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C17.52 2 22 6.48 22 12C22 17.52 17.52 22 12 22C6.48 22 2 17.52 2 12C2 6.48 6.48 2 12 2ZM12 11H8V13H12V16L16 12L12 8V11Z"></path></svg>
+            <span>Frens</span>
+        </div>
+        <div class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13 10H18V12H13V10ZM13 14H18V16H13V14ZM19 4H5C3.89543 4 3 4.89543 3 6V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V6C21 4.89543 20.1046 4 19 4ZM6 8H11V18H6V8Z"></path></svg>
+            <span>Earn</span>
+        </div>
+        <div class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 2.00998C15.0632 2.05288 16.5387 2.65961 17.6816 3.69343C19.957 5.68832 20.2223 9.15779 18.3364 11.4584L17.8466 12.0309C17.9622 12.0102 18.0825 12 18.2072 12C20.3168 12 22.0072 13.6863 22.0072 15.7923C22.0072 17.902 20.3168 19.5882 18.2072 19.5882H7.49723C4.9431 19.5882 2.89723 17.5452 2.89723 15C2.89723 12.5643 4.79313 10.5882 7.20723 10.5882C7.38713 10.5882 7.56153 10.6032 7.72913 10.6318L8.27134 6.7842C8.79904 2.89439 12.2753 1.96198 13.5 2.00998Z"></path></svg>
+            <span>Boosts</span>
+        </div>
+    </footer>
+
+    <!-- টেলিগ্রাম ওয়েব অ্যাপ স্ক্রিপ্ট -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+    <script>
+        // DOM এলিমেন্টগুলো সিলেক্ট করা
+        const totalScoreElement = document.getElementById('total-score');
+        const energyCountElement = document.getElementById('energy-count');
+        const energyBarElement = document.getElementById('energy-bar');
+        const coinContainer = document.getElementById('coin-container');
+        const usernameElement = document.getElementById('username');
+        const tg = window.Telegram.WebApp;
+
+        // গেমের ভ্যারিয়েবল
+        let score = 0;
+        let energy = 1000;
+        const maxEnergy = 1000;
+        const tapValue = 1; // প্রতি ট্যাপে কত পয়েন্ট
+        const energyRefillRate = 1; // প্রতি সেকেন্ডে কত এনার্জি রিফিল হবে
+
+        // টেলিগ্রাম ইউজার আইডি ও নাম
+        const userId = tg.initDataUnsafe?.user?.id || 'guest_user';
+        const userName = tg.initDataUnsafe?.user?.firstName || 'Player';
+        usernameElement.innerText = userName;
+
+        // অ্যাপ লোড হলে ডেটা লোড করা
+        window.addEventListener('load', () => {
+            loadGameState();
+            updateDisplay();
+            tg.ready(); // টেলিগ্রামকে জানানো যে অ্যাপ রেডি
+            setInterval(refillEnergy, 1000); // প্রতি সেকেন্ডে এনার্জি রিফিল শুরু
+        });
+
+        // কয়েন ট্যাপ করার ইভেন্ট
+        coinContainer.addEventListener('pointerdown', (event) => {
+            if (energy >= tapValue) {
+                // স্কোর ও এনার্জি আপডেট
+                score += tapValue;
+                energy -= tapValue;
+
+                // ট্যাপ ফিডব্যাক তৈরি
+                createTapFeedback(event);
+
+                // ডিসপ্লে আপডেট
+                updateDisplay();
+
+                // গেম স্টেট সেভ করা
+                saveGameState();
+                
+                // টেলিগ্রাম হ্যাপটিক ফিডব্যাক (ভাইব্রেশন)
+                tg.HapticFeedback.impactOccurred('light');
+            }
+        });
+
+        // ট্যাপ ফিডব্যাক (+1) তৈরি করার ফাংশন
+        function createTapFeedback(event) {
+            const feedback = document.createElement('div');
+            feedback.className = 'tap-feedback';
+            feedback.innerText = `+${tapValue}`;
+            
+            const rect = coinContainer.getBoundingClientRect();
+            // টাচ বা ক্লিকের পজিশন নেওয়া
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            feedback.style.left = `${x}px`;
+            feedback.style.top = `${y}px`;
+            
+            coinContainer.appendChild(feedback);
+
+            // অ্যানিমেশন শেষে এলিমেন্টটি সরিয়ে ফেলা
+            setTimeout(() => {
+                feedback.remove();
+            }, 1000);
+        }
+
+        // এনার্জি রিফিল করার ফাংশন
+        function refillEnergy() {
+            if (energy < maxEnergy) {
+                energy = Math.min(maxEnergy, energy + energyRefillRate);
+                updateDisplay();
+                saveGameState();
+            }
+        }
+
+        // ডিসপ্লে আপডেট করার ফাংশন
+        function updateDisplay() {
+            totalScoreElement.innerText = Math.floor(score).toLocaleString();
+            energyCountElement.innerText = `${Math.floor(energy)}/${maxEnergy}`;
+            energyBarElement.style.width = `${(energy / maxEnergy) * 100}%`;
+        }
+
+        // গেমের ডেটা লোকাল স্টোরেজে সেভ করা
+        function saveGameState() {
+            const gameState = {
+                score: score,
+                energy: energy,
+                lastUpdate: Date.now()
+            };
+            localStorage.setItem(`gameState_${userId}`, JSON.stringify(gameState));
+        }
+
+        // লোকাল স্টোরেজ থেকে ডেটা লোড করা
+        function loadGameState() {
+            const savedState = localStorage.getItem(`gameState_${userId}`);
+            if (savedState) {
+                const gameState = JSON.parse(savedState);
+                const timePassed = (Date.now() - gameState.lastUpdate) / 1000; // সেকেন্ড
+                
+                score = gameState.score;
+                energy = Math.min(maxEnergy, gameState.energy + timePassed * energyRefillRate);
+            }
+        }
+
+    </script>
+</body>
+</html>
